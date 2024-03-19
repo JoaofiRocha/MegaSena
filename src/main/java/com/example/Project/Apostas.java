@@ -1,7 +1,6 @@
 package com.example.Project;
 
 import com.vaadin.flow.component.Text;
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.*;
@@ -20,20 +19,15 @@ import java.util.*;
 @Route(value = "/Apostas", layout = MainLayout.class)
 public class Apostas extends VerticalLayout{
 
-    private static Map<String, Bet> bets;
     private static List<Sorteio> sorteio;
     private static Path path;
 
     public Apostas() throws IOException {
-        bets = new HashMap<>();
 
-        String currentDirectory = Paths.get("").toAbsolutePath().toString();
-        String fileSeparator = File.separator;
-        path = Paths.get(currentDirectory + fileSeparator + "src" + fileSeparator + "Apostas.csv");
+        if (sorteio == null)
+            sorteio = new ArrayList<>();
 
-        readApostas(path);
-
-        sorteio = new ArrayList<>();
+        reloadBets();
 
         Div divNome = new Div();
         TextField nome = new TextField("Nome do Apostador: ");
@@ -80,17 +74,14 @@ public class Apostas extends VerticalLayout{
 
         enviarAposta.addClickListener(e -> {
             Bet bet = new Bet(nome.getValue(), numEscolhidos);
-            String sorteio = MainLayout.getSorteio();
-            bets.put(sorteio, bet);
-
-
-            try {
-                setBets(sorteio, bet, path);
-            } catch (IOException ex) {
-                throw new RuntimeException(ex);
+            String nameSorteio = MainLayout.getSorteio();
+            for (Sorteio s: sorteio){
+                if(s.getName() == nameSorteio){
+                    s.addBet(bet);
+                }
             }
 
-            UI.getCurrent().getPage().reload();
+                saveBets();
         });
 
         add(divNome);
@@ -99,17 +90,20 @@ public class Apostas extends VerticalLayout{
 
     }
 
-    public static void getBets(String sorteio) throws IOException {
-        bets.remove(sorteio);
-        reloadBets(path);
-    }
 
-    private static void readApostas(Path path) throws IOException {
+    public static void reloadBets() throws IOException {
+        String currentDirectory = Paths.get("").toAbsolutePath().toString();
+        String fileSeparator = File.separator;
+        path = Paths.get(currentDirectory + fileSeparator + "src" + fileSeparator + "Apostas.csv");
+
+        for(Sorteio s : sorteio)
+            s.resetBets();
+
         BufferedReader bf = Files.newBufferedReader(path);
 
         String line = "";
         while((line = bf.readLine()) != null) {
-            String sorteio = line;
+            String nameSorteio = line;
             String name = bf.readLine();
             Map<Integer, Integer> num = new HashMap<>();
             while ((line = bf.readLine()) != null) {
@@ -119,12 +113,17 @@ public class Apostas extends VerticalLayout{
                 num.put(n, n);
             }
             Bet bet = new Bet(name, num);
-            bets.put(sorteio, bet);
+
+            for(Sorteio s : sorteio){
+                if(s.getName().equals(nameSorteio)){
+                    s.addBet(bet);
+                }
+            }
         }
 
     }
 
-    private static StringBuilder readApsotas(Path path) throws IOException {
+    private static StringBuilder readBets(Path path) throws IOException {
         StringBuilder result = new StringBuilder();
         try (BufferedReader bf = Files.newBufferedReader(path)) {
             String line;
@@ -137,7 +136,7 @@ public class Apostas extends VerticalLayout{
 
     private void setBets(String sorteio, Bet bet, Path path) throws IOException {
 
-        StringBuilder a = readApsotas(path);
+        StringBuilder a = readBets(path);
         try {
             BufferedWriter bw = Files.newBufferedWriter(path);
             a.append("\n").append(sorteio).append("\n").append(bet.getName());
@@ -154,18 +153,16 @@ public class Apostas extends VerticalLayout{
         }
     }
 
-    private static void reloadBets(Path path){
+    public static void saveBets(){
         try (BufferedWriter bw = Files.newBufferedWriter(path)) {
-            List<String> s = new ArrayList<>(bets.keySet());
-            List<Bet> b = new ArrayList<>(bets.values());
-
             StringBuilder st = new StringBuilder();
-            for(String sorteio : s){
-                st.append("\n").append(s);
-                for(Bet bet : b){
-                    st.append("\n").append(bet.getName());
-                    for(Integer i : bet.getNumbers().values()){
-                        st.append("\n").append(i);
+            for (Sorteio s : sorteio) {
+                st.append(s.getName()).append("\n");
+                for(Bet bet : s.getBet()){
+                    st.append(bet.getName()).append("\n");
+
+                    for (Integer i : bet.getNumbers().values()) {
+                        st.append(i).append("\n");
                     }
                 }
             }
@@ -176,12 +173,23 @@ public class Apostas extends VerticalLayout{
         }
     }
 
-    private static void createSorteio(Sorteio name){
+    public static void createSorteio(Sorteio name){
+        if (sorteio == null)
+            sorteio = new ArrayList<>();
         sorteio.add(name);
     }
 
-    private static void deleteSorteio(Sorteio name){
+    public static void deleteSorteio(Sorteio name){
         sorteio.remove(name);
     }
+
+    public static Sorteio getSorteio(String name){
+        for (Sorteio s : sorteio){
+            if(s.getName() == name)
+                return s;
+        }
+        return null;
+    }
+
 
 }

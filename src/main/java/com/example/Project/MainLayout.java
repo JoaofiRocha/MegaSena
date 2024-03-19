@@ -45,7 +45,7 @@ public class MainLayout extends AppLayout {
         nothing.getStyle().setMarginRight("100px");
 
         Tab apostas = new Tab(apostasIcon, new Anchor("/Apostas", "Apostas"));
-        Tab dados = new Tab(dadosIcon, new Anchor("","Dados das Apostas"));
+        Tab dados = new Tab(dadosIcon, new Anchor("/Dados","Dados das Apostas"));
         Tab executarSorteio = new Tab(executarIcon, new Anchor("","Executar Sorteio"));
         Tab premio = new Tab(premioIcon, new Anchor("","Premio"));
 

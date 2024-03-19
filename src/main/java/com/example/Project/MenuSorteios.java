@@ -60,9 +60,9 @@ public class MenuSorteios extends VerticalLayout {
             delete.addClickListener(e ->{
                     buttonArea.removeAll();
                     sorteios.remove(sorteio);
+                    Apostas.deleteSorteio(Apostas.getSorteio(MainLayout.getSorteio()));
 
                 try {
-                    Apostas.getBets(sorteio);
                     reloadSorteio(path);
                 } catch (IOException ex) {
                     throw new RuntimeException(ex);
@@ -77,6 +77,8 @@ public class MenuSorteios extends VerticalLayout {
 
     private void createNewSorteio(Path path, String name) throws IOException{
         String newSorteio = name;
+        Sorteio n = new Sorteio(name);
+        Apostas.createSorteio(n);
         sorteios.add(newSorteio);
 
 
@@ -92,6 +94,8 @@ public class MenuSorteios extends VerticalLayout {
         ArrayList<String> list = new ArrayList<>();
         while ((line = bf.readLine()) != null){
             list.add(line);
+            Sorteio n = new Sorteio(line);
+            Apostas.createSorteio(n);
         }
         return list;
     }
