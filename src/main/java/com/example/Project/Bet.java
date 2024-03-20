@@ -1,6 +1,9 @@
 package com.example.Project;
 
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 public class Bet {
@@ -18,5 +21,11 @@ public class Bet {
 
     public Map<Integer, Integer> getNumbers(){
         return numbers;
+    }
+
+    public List<Integer> getNumber(){
+        List<Integer> a = new ArrayList<>(numbers.values());
+        Collections.sort(a);
+        return a;
     }
 }

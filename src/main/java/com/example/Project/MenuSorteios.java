@@ -27,7 +27,8 @@ public class MenuSorteios extends VerticalLayout {
         String fileSeparator = File.separator;
         Path path = Paths.get(currentDirectory + fileSeparator + "src" + fileSeparator + "Sorteios.csv");
 
-        sorteios = readSorteio(path);
+        if (sorteios == null)
+            sorteios = readSorteio(path);
 
         TextField sorteioName = new TextField("Nome do Sorteio:");
         Button newSorteioButton = new Button("Criar Novo Sorteio", event -> {
@@ -60,7 +61,7 @@ public class MenuSorteios extends VerticalLayout {
             delete.addClickListener(e ->{
                     buttonArea.removeAll();
                     sorteios.remove(sorteio);
-                    Apostas.deleteSorteio(Apostas.getSorteio(MainLayout.getSorteio()));
+                    Apostas.deleteSorteio(Apostas.getSorteio(sorteio));
 
                 try {
                     reloadSorteio(path);
@@ -76,11 +77,11 @@ public class MenuSorteios extends VerticalLayout {
     }
 
     private void createNewSorteio(Path path, String name) throws IOException{
-        String newSorteio = name;
-        Sorteio n = new Sorteio(name);
-        Apostas.createSorteio(n);
-        sorteios.add(newSorteio);
-
+        if (!sorteios.contains(name)) {
+            Sorteio n = new Sorteio(name);
+            Apostas.createSorteio(n);
+            sorteios.add(name);
+        }
 
         reloadSorteio(path);
         UI.getCurrent().getPage().reload();

@@ -33,10 +33,12 @@ public class MainLayout extends AppLayout {
 
         Icon apostasIcon = VaadinIcon.INVOICE.create();
         apostasIcon.setSize("50px");
-        Icon dadosIcon = VaadinIcon.BAR_CHART.create();
-        dadosIcon.setSize("50px");
+        Icon listaIcon = VaadinIcon.MODAL_LIST.create();
+        listaIcon.setSize("50px");
         Icon executarIcon = VaadinIcon.EXCLAMATION.create();
         executarIcon.setSize("50px");
+        Icon dadosIcon = VaadinIcon.BAR_CHART.create();
+        dadosIcon.setSize("50px");
         Icon premioIcon = VaadinIcon.COIN_PILES.create();
         premioIcon.setSize("50px");
 
@@ -45,16 +47,17 @@ public class MainLayout extends AppLayout {
         nothing.getStyle().setMarginRight("100px");
 
         Tab apostas = new Tab(apostasIcon, new Anchor("/Apostas", "Apostas"));
-        Tab dados = new Tab(dadosIcon, new Anchor("/Dados","Dados das Apostas"));
-        Tab executarSorteio = new Tab(executarIcon, new Anchor("","Executar Sorteio"));
+        Tab lista = new Tab(listaIcon, new Anchor("/Lista","Lista das Apostas"));
+        Tab executarSorteio = new Tab(executarIcon, new Anchor("/Executar","Executar Sorteio"));
+        Tab dados = new Tab(dadosIcon, new Anchor("/Dados", "Dados do Sorteio"));
         Tab premio = new Tab(premioIcon, new Anchor("","Premio"));
 
-        for (Tab tab : new Tab[] { apostas, dados, executarSorteio, premio }) {
+        for (Tab tab : new Tab[] { apostas, lista, executarSorteio, dados, premio }) {
             tab.addThemeVariants(TabVariant.LUMO_ICON_ON_TOP);
         }
 
 
-        Tabs tabs = new Tabs( nothing,apostas, dados, executarSorteio, premio );
+        Tabs tabs = new Tabs( nothing,apostas, lista, executarSorteio, dados, premio );
 
         addToNavbar(toggle, title,tabs);
     }

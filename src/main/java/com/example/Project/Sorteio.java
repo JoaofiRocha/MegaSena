@@ -7,13 +7,16 @@ public class Sorteio {
 
     private List<Bet> bets;
     private String name;
+    private Boolean hasEnded;
     public Sorteio(String name, Bet bet){
+        hasEnded = false;
         bets = new ArrayList<>();
         bets.add(bet);
         this.name = name;
     }
 
     public Sorteio(String name){
+        hasEnded = false;
         bets = new ArrayList<>();
         this.name = name;
     }

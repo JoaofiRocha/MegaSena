@@ -1,6 +1,7 @@
 package com.example.Project;
 
 import com.vaadin.flow.component.Text;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.*;
@@ -33,7 +34,9 @@ public class Apostas extends VerticalLayout{
         TextField nome = new TextField("Nome do Apostador: ");
         divNome.add(nome);
         Button enviarAposta = new Button("Salvar Aposta!");
-        enviarAposta.getStyle().setMarginLeft("50px");
+        Button randomBet = new Button("Surpresa!!!");
+        randomBet.getStyle().setMargin("50px");
+        divNome.add(randomBet);
         divNome.add(enviarAposta);
 
 
@@ -72,6 +75,26 @@ public class Apostas extends VerticalLayout{
 
         }
 
+        randomBet.addClickListener(e -> {
+            numEscolhidos.clear();
+           if(!nome.getValue().isEmpty()){
+               while(numEscolhidos.size() < 5){
+                   int n = (int) (Math.random() * 50);
+                   if(n != 0)
+                       numEscolhidos.put(n, n);
+               }
+               Bet bet = new Bet(nome.getValue(), numEscolhidos);
+               String nameSorteio = MainLayout.getSorteio();
+               for (Sorteio s: sorteio){
+                   if(s.getName() == nameSorteio){
+                       s.addBet(bet);
+                   }
+               }
+               saveBets();
+               UI.getCurrent().getPage().reload();
+           }
+        });
+
         enviarAposta.addClickListener(e -> {
             Bet bet = new Bet(nome.getValue(), numEscolhidos);
             String nameSorteio = MainLayout.getSorteio();
@@ -80,9 +103,10 @@ public class Apostas extends VerticalLayout{
                     s.addBet(bet);
                 }
             }
-
-                saveBets();
+            saveBets();
+            UI.getCurrent().getPage().reload();
         });
+
 
         add(divNome);
         add(text);
@@ -134,40 +158,40 @@ public class Apostas extends VerticalLayout{
         return result;
     }
 
-    private void setBets(String sorteio, Bet bet, Path path) throws IOException {
+    private void setBets(String nameSorteio, Bet bet){
 
-        StringBuilder a = readBets(path);
-        try {
-            BufferedWriter bw = Files.newBufferedWriter(path);
-            a.append("\n").append(sorteio).append("\n").append(bet.getName());
+        try (BufferedWriter bw = Files.newBufferedWriter(path)) {
 
-            List<Integer> values = new ArrayList<>(bet.getNumbers().values());
-            for(Integer num : values){
-                a.append("\n").append(num);
+            bw.write(nameSorteio +  "\n");
+            bw.write(bet.getName() + "\n");
+
+            for (Integer i : bet.getNumbers().values()) {
+                bw.write(i + "\n");
             }
-
-            bw.write(a.toString());
-            bw.flush();
+            bw.write("\n");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+
     }
 
-    public static void saveBets(){
+    public static void saveBets() {
         try (BufferedWriter bw = Files.newBufferedWriter(path)) {
-            StringBuilder st = new StringBuilder();
+            Set<String> writtenBets = new HashSet<>();
             for (Sorteio s : sorteio) {
-                st.append(s.getName()).append("\n");
-                for(Bet bet : s.getBet()){
-                    st.append(bet.getName()).append("\n");
-
-                    for (Integer i : bet.getNumbers().values()) {
-                        st.append(i).append("\n");
+                for (Bet bet : s.getBet()) {
+                    String key = s.getName() + bet.getName();
+                    if (!writtenBets.contains(key)) {
+                        bw.write(s.getName() + "\n");
+                        bw.write(bet.getName() + "\n");
+                        for (Integer i : bet.getNumbers().values()) {
+                            bw.write(i + "\n");
+                        }
+                        bw.write("\n");
+                        writtenBets.add(key);
                     }
                 }
             }
-            bw.write(st.toString());
-            bw.flush();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -176,16 +200,22 @@ public class Apostas extends VerticalLayout{
     public static void createSorteio(Sorteio name){
         if (sorteio == null)
             sorteio = new ArrayList<>();
-        sorteio.add(name);
+        boolean sorteioExists = sorteio.stream().anyMatch(s -> s.getName().equals(name.getName()));
+
+        if (!sorteioExists)
+            sorteio.add(name);
     }
 
     public static void deleteSorteio(Sorteio name){
         sorteio.remove(name);
+        saveBets();
+        UI.getCurrent().getPage().reload();
     }
+
 
     public static Sorteio getSorteio(String name){
         for (Sorteio s : sorteio){
-            if(s.getName() == name)
+            if(s.getName().equals(name))
                 return s;
         }
         return null;
