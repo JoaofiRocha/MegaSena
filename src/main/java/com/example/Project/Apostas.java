@@ -127,7 +127,7 @@ public class Apostas extends VerticalLayout{
                 dialog("Nome Invalido!");
                 return;
             }
-            else if(numEscolhidos.size() < 4){
+            else if(numEscolhidos.size() < 5){
                 dialog("Adicione 5 Numeros!!!");
                 return;
             }

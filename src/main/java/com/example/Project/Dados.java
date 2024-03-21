@@ -96,7 +96,6 @@ public class Dados extends HorizontalLayout {
             }
         }
 
-
         //Ordena a lista utilizando a ordem alfabetica dos nomes
         listWinners.sort(new Comparator<Bet>() {
             @Override
