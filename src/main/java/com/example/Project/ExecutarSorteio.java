@@ -128,7 +128,9 @@ public class ExecutarSorteio extends VerticalLayout {
                     n = new ArrayList<>();
 
                     while(n.size() < 5){
-                        n.add((int) (Math.random() * 50));
+                        int num = (int) (Math.random() * 50);
+                        if(num != 0)
+                            n.add(num);
                         Collections.sort(n);
                     }
 
