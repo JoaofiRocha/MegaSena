@@ -39,8 +39,7 @@ public class MainLayout extends AppLayout {
         executarIcon.setSize("50px");
         Icon dadosIcon = VaadinIcon.BAR_CHART.create();
         dadosIcon.setSize("50px");
-        Icon premioIcon = VaadinIcon.COIN_PILES.create();
-        premioIcon.setSize("50px");
+
 
 
         Tab nothing = new Tab(new Span(" "));
@@ -50,14 +49,13 @@ public class MainLayout extends AppLayout {
         Tab lista = new Tab(listaIcon, new Anchor("/Lista","Lista das Apostas"));
         Tab executarSorteio = new Tab(executarIcon, new Anchor("/Executar","Executar Sorteio"));
         Tab dados = new Tab(dadosIcon, new Anchor("/Dados", "Dados do Sorteio"));
-        Tab premio = new Tab(premioIcon, new Anchor("","Premio"));
 
-        for (Tab tab : new Tab[] { apostas, lista, executarSorteio, dados, premio }) {
+        for (Tab tab : new Tab[] { apostas, lista, executarSorteio, dados}) {
             tab.addThemeVariants(TabVariant.LUMO_ICON_ON_TOP);
         }
 
 
-        Tabs tabs = new Tabs( nothing,apostas, lista, executarSorteio, dados, premio );
+        Tabs tabs = new Tabs( nothing,apostas, lista, executarSorteio, dados);
 
         addToNavbar(toggle, title,tabs);
     }

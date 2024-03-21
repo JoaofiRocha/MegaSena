@@ -6,8 +6,6 @@ import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.router.Route;
-
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -16,7 +14,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-@Route ("a")
 public class MenuSorteios extends VerticalLayout {
 
     private List<String> sorteios;
@@ -32,6 +29,10 @@ public class MenuSorteios extends VerticalLayout {
 
         TextField sorteioName = new TextField("Nome do Sorteio:");
         Button newSorteioButton = new Button("Criar Novo Sorteio", event -> {
+            if(sorteioName.getValue().isEmpty()){
+                Apostas.dialog("Nome Invalido!");
+                return;
+            }
             try {
                 createNewSorteio(path, sorteioName.getValue());
             } catch (IOException e) {

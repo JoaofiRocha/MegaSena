@@ -1,21 +1,12 @@
 package com.example.Project;
 
-import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.button.ButtonVariant;
-import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
-import com.vaadin.flow.component.dialog.Dialog;
-import com.vaadin.flow.component.html.Anchor;
-import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.Main;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.component.button.Button;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -23,25 +14,48 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Route(value = "/Dados", layout = MainLayout.class)
 public class Dados extends HorizontalLayout {
 
-    List<Winners> winners;
+    static List<Winners> winners;
     Sorteio s;
     Winners w;
 
     public Dados() throws IOException {
-        winners = new ArrayList<>();
-        readWinners();
-
-        if(winners.size() == 0){
-            UI.getCurrent().navigate("/Apostas");
-            dialog("Nenhum Sorteio Finalizado");
+        //Verifica se tem um sorteio selecionado
+        if(MainLayout.getSorteio() == null){
+            UI.getCurrent().navigate("");
+            Apostas.dialog("Nenhum Sorteio Selecionado"  );
             return;
         }
 
+        //Le o arquvio csv
+        winners = new ArrayList<>();
+        readWinners();
+        Apostas.reloadBets();
+
+        //Verifica se tem sorteios finalizados
+        if(winners.size() == 0){
+            UI.getCurrent().navigate("");
+            Apostas.dialog("Nenhum Sorteio Finalizado!");
+            return;
+        }
+
+        //Verifica que o sorteio selecionado foi finalizado
+        boolean a = false;
+        for(Winners win : winners){
+            if(win.getNameSorteio().equals(MainLayout.getSorteio())){
+                a = true;
+            }
+        }
+        if(!a){
+            UI.getCurrent().navigate("/Apostas");
+            Apostas.dialog("Sorteio Não Finalizado!");
+            return;
+        }
+
+        //Seleciona o sorteio
         String sorteio = MainLayout.getSorteio();
         for(Winners win : winners){
             if(win.getNameSorteio().equals(sorteio)){
@@ -51,7 +65,7 @@ public class Dados extends HorizontalLayout {
             }
         }
 
-
+        //Cria os componentes da UI
         TextArea listNumbers = new TextArea();
         listNumbers.setReadOnly(true);
         listNumbers.setLabel("Numeros Sorteados");
@@ -64,6 +78,7 @@ public class Dados extends HorizontalLayout {
         timesRandomized.getStyle().setColor("grey");
 
 
+        //Obtem informacoes necessarias
         int numberOfWinners = 0;
         List<Bet> listWinners = new ArrayList<>();
         Map<Integer, Integer> numbers = new HashMap<>();
@@ -81,13 +96,8 @@ public class Dados extends HorizontalLayout {
             }
         }
 
-        numbers = numbers.entrySet().stream()
-                .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()))
-                .collect(Collectors.toMap(
-                        Map.Entry::getKey,
-                        Map.Entry::getValue,
-                        (oldValue, newValue) -> oldValue, LinkedHashMap::new));
 
+        //Ordena a lista utilizando a ordem alfabetica dos nomes
         listWinners.sort(new Comparator<Bet>() {
             @Override
             public int compare(Bet bet01, Bet bet02){
@@ -97,17 +107,19 @@ public class Dados extends HorizontalLayout {
 
 
 
-
+        //Cria o componente de numero de vencedores
         Span textNumberOfWinners = new Span("Vencedores: " + numberOfWinners);
         textNumberOfWinners.getStyle().setFont("roboto");
         textNumberOfWinners.getStyle().setFontSize("25px");
         textNumberOfWinners.getStyle().setColor("grey");
 
+        //Cria o componente da Lista de vencedores
         Grid <Bet> gridListWinners = new Grid<>(Bet.class, false);
         gridListWinners.addColumn(Bet :: getName).setHeader("Nome do Apostador");
         gridListWinners.addColumn(Bet :: getNumber).setHeader("Números Apostados");
         gridListWinners.setItems(listWinners);
 
+        //cria o componente da Lista de numeros apostados
         Grid<Map.Entry<Integer, Integer>> gridNumbers = new Grid<>();
         gridNumbers.addColumn(entry -> entry.getKey()).setHeader("Numeros");
         gridNumbers.addColumn(entry -> entry.getValue()).setHeader("Quantas Vezes Apareceu");
@@ -122,6 +134,7 @@ public class Dados extends HorizontalLayout {
         VerticalLayout divTables = new VerticalLayout();
         divTables.add(gridNumbers);
 
+        //Caso nao tenha vencedores nao mostra a lista
         if(listWinners.size() == 0){
             Span noWinners = new Span("Não Houve Vencedores");
             noWinners.getStyle().setFont("roboto");
@@ -136,7 +149,10 @@ public class Dados extends HorizontalLayout {
         add(div, divTables);
     }
 
-    private void readWinners() throws IOException {
+    //Le o arquivo csv
+    public static void readWinners() throws IOException {
+        if(winners == null)
+            winners = new ArrayList<>();
 
         String currentDirectory = Paths.get("").toAbsolutePath().toString();
         String fileSeparator = File.separator;
@@ -169,13 +185,13 @@ public class Dados extends HorizontalLayout {
         }
     }
 
-    public void dialog(String error){
-        ConfirmDialog dialog = new ConfirmDialog();
-
-        Button cancelButton = new Button(error, (e) -> dialog.close());
-        cancelButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
-        dialog.add(cancelButton);
-        dialog.open();
+    //Verifica se o sorteio foi finalizado
+    public static boolean hasFinished(String sorteio) throws IOException {
+        for(Winners win : winners ){
+            if(win.getNameSorteio().equals(sorteio))
+                return true;
+        }
+        return false;
     }
 
 }
